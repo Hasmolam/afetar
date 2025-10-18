@@ -47,13 +47,34 @@ Supabase projenizden PostgreSQL bağlantı bilgilerini alın:
 3. `DATABASE_URL` değerine yapıştırın
 
 ### 4. Veritabanı Migration'ları
+
+Migration sistemi hazır durumda. Migration komutlarını kullanmak için:
+
+#### Kolay Yol (Önerilen):
+```bash
+# Migration helper script'ini kullan
+./migrate.sh help          # Tüm komutları göster
+./migrate.sh current       # Mevcut durumu göster
+./migrate.sh upgrade       # Migration'ları uygula
+./migrate.sh create "msg"  # Yeni migration oluştur
+```
+
+#### Manuel Yol:
 ```bash
 # Migration'ları uygula
 flask db upgrade
 
 # Yeni migration oluşturmak için (model değişikliklerinde)
 flask db migrate -m "Açıklama mesajı"
+
+# Migration durumunu kontrol et
+flask db current
+
+# Migration geçmişini görüntüle
+flask db history
 ```
+
+**Not:** Detaylı migration rehberi için [MIGRATIONS.md](MIGRATIONS.md) dosyasına bakın.
 
 ### 5. Uygulamayı Çalıştırma
 ```bash
@@ -61,27 +82,6 @@ flask db migrate -m "Açıklama mesajı"
 source venv/bin/activate  # Linux/Mac
 
 # Uygulamayı başlat
-python run.py
-```
-
-Uygulama `http://localhost:5000` adresinde çalışacaktır.
-
-### 5. Migration Klasörünü Başlatma (İlk kez)
-```bash
-flask db init
-```
-
-### 6. Veritabanı Migration'ları
-```bash
-# Migration oluştur
-flask db migrate -m "İlk migration"
-
-# Migration'ı uygula
-flask db upgrade
-```
-
-### 6. Uygulamayı Çalıştırma
-```bash
 python run.py
 ```
 
@@ -161,6 +161,37 @@ Gıda, su, barınak, ilaç gibi ihtiyaç kategorileri.
 Yardım taleplerinde belirtilen spesifik ihtiyaçlar.
 
 ## 🛠️ Geliştirme Notları
+
+### Database Migrations
+
+Veritabanı şemasında değişiklik yaparken migration sistemi kullanılmalıdır.
+
+#### Hızlı Komutlar (migrate.sh ile):
+```bash
+./migrate.sh create "Add new field to User"  # Yeni migration oluştur
+./migrate.sh upgrade                          # Migration'ları uygula
+./migrate.sh current                          # Durumu kontrol et
+./migrate.sh history                          # Geçmişi görüntüle
+./migrate.sh downgrade                        # Son migration'ı geri al
+```
+
+#### Manuel Komutlar:
+```bash
+# Model değişikliklerinden sonra:
+flask db migrate -m "Değişiklik açıklaması"
+flask db upgrade
+
+# Migration durumunu kontrol et:
+flask db current
+
+# Migration geçmişini göster:
+flask db history
+
+# Son migration'ı geri al:
+flask db downgrade
+```
+
+**Önemli:** Detaylı migration rehberi ve best practices için [MIGRATIONS.md](MIGRATIONS.md) dosyasını okuyun.
 
 ### Migration Oluşturma
 Model değişikliklerinden sonra:
