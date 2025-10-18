@@ -191,7 +191,7 @@ Detaylı API dokümantasyonu için [Backend README](backend/README.md) dosyasın
 
 ### Senaryo 1: Afetzede Yardım İster
 1. Kullanıcı uygulamayı açar
-2. Ana ekrandaki büyük SOS butonuna basar
+2. Ana ekrandaki büyük YARDIM butonuna basar
 3. İhtiyaçlarını seçer (gıda, su, ilaç, vb.)
 4. Sistem konumunu otomatik alır ve yardım talebi oluşturur
 5. En yakın aktif gönüllüye bildirim gönderilir
@@ -199,7 +199,7 @@ Detaylı API dokümantasyonu için [Backend README](backend/README.md) dosyasın
 
 ### Senaryo 2: Gönüllü Yardım Eder
 1. Gönüllü "Gönüllü Modu"nu aktif eder
-2. Yakınında bir SOS çağrısı geldiğinde bildirim alır
+2. Yakınında bir YARDIM çağrısı geldiğinde bildirim alır
 3. Haritada çağrıyı görür ve kabul eder
 4. Navigasyon ile afetzedenin konumuna yönlendirilir
 5. Yardımı tamamladıktan sonra durumu "Tamamlandı" olarak işaretler
@@ -213,9 +213,9 @@ Detaylı API dokümantasyonu için [Backend README](backend/README.md) dosyasın
 - [x] Veritabanı modellerinin oluşturulması
 - [x] Temel API endpoint'lerinin hazırlanması
 - [x] PostgreSQL entegrasyonu
+- [x] Kullanıcı kimlik doğrulama (JWT)
 
 ### 🔄 Devam Eden
-- [ ] Kullanıcı kimlik doğrulama (JWT)
 - [ ] Telefon numarası doğrulama (SMS)
 - [ ] Konum tabanlı sorgulama optimizasyonu
 - [ ] Real-time bildirim sistemi
@@ -251,7 +251,13 @@ Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
 
 ## 👥 Ekip
 
-- **Hasmolam** - Proje Sahibi ve Geliştirici
+- **Hasan Hüseyin Yolcu** - Backend developer
+- **Kahraman Boyraz** - Developer
+- **Mert** - Mobil Developer
+- **Naz** - UI/UX Designer
+- **Uğur Emre** - Developer
+- **Arda Haluk Türkoğlu** - Developer
+- **Türker Özgür** - Developer
 
 ---
 
@@ -259,7 +265,7 @@ Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
 
 Sorularınız veya önerileriniz için:
 - GitHub Issues: [github.com/Hasmolam/afetar/issues](https://github.com/Hasmolam/afetar/issues)
-- Email: [İletişim bilgisi eklenecek]
+- Email: hasanhuseyinyolcu25@gmail.com
 
 ---
 
