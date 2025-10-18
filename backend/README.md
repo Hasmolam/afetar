@@ -1,0 +1,236 @@
+# Afetar Backend - Kurulum ve Çalıştırma Kılavuzu
+
+## 📋 Gereksinimler
+- Python 3.8+
+- PostgreSQL 12+ (veya Supabase gibi cloud PostgreSQL servisi)
+- pip (Python paket yöneticisi)
+
+## 🚀 Hızlı Başlangıç
+
+### 1. Sanal Ortam Oluşturma ve Aktivasyon
+```bash
+cd backend
+
+# Sanal ortam oluştur
+python3 -m venv venv
+
+# Sanal ortamı aktif et
+source venv/bin/activate  # Linux/Mac
+# veya
+venv\Scripts\activate  # Windows
+```
+
+### 2. Bağımlılıkları Yükleme
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Ortam Değişkenlerini Ayarlama
+`.env.example` dosyasını `.env` olarak kopyalayın ve değerleri düzenleyin:
+
+```bash
+cp .env.example .env
+```
+
+`.env` dosyasını düzenleyin:
+```bash
+# Gerekli alanlar
+SECRET_KEY=cok-guclu-ve-rastgele-bir-anahtar-buraya-yazin
+DATABASE_URL=postgresql://kullanici_adi:sifre@host:5432/veritabani_adi
+FLASK_ENV=development
+```
+
+#### Supabase Kullanıyorsanız:
+Supabase projenizden PostgreSQL bağlantı bilgilerini alın:
+1. Supabase Dashboard → Settings → Database
+2. Connection String (URI) seçeneğini kopyalayın
+3. `DATABASE_URL` değerine yapıştırın
+
+### 4. Veritabanı Migration'ları
+```bash
+# Migration'ları uygula
+flask db upgrade
+
+# Yeni migration oluşturmak için (model değişikliklerinde)
+flask db migrate -m "Açıklama mesajı"
+```
+
+### 5. Uygulamayı Çalıştırma
+```bash
+# Sanal ortamın aktif olduğundan emin olun
+source venv/bin/activate  # Linux/Mac
+
+# Uygulamayı başlat
+python run.py
+```
+
+Uygulama `http://localhost:5000` adresinde çalışacaktır.
+
+### 5. Migration Klasörünü Başlatma (İlk kez)
+```bash
+flask db init
+```
+
+### 6. Veritabanı Migration'ları
+```bash
+# Migration oluştur
+flask db migrate -m "İlk migration"
+
+# Migration'ı uygula
+flask db upgrade
+```
+
+### 6. Uygulamayı Çalıştırma
+```bash
+python run.py
+```
+
+Uygulama `http://localhost:5000` adresinde çalışacaktır.
+
+## 📡 API Endpoint'leri
+
+### Ana Endpoint'ler
+- `GET /` - API bilgisi ve durum
+- `GET /health` - Health check endpoint'i
+- `GET /api/v1/test` - API test endpoint'i
+
+### Kullanıcı Endpoint'leri
+- `GET /api/v1/users` - Tüm kullanıcıları listele
+- `GET /api/v1/users/<id>` - Belirli bir kullanıcıyı getir
+- `POST /api/v1/users` - Yeni kullanıcı kaydet
+- `PUT /api/v1/users/<id>` - Kullanıcı bilgilerini güncelle
+- `DELETE /api/v1/users/<id>` - Kullanıcı sil
+
+### Yardım Talepleri
+- `GET /api/v1/help-requests` - Tüm yardım taleplerini listele
+- `GET /api/v1/help-requests/<id>` - Belirli bir yardım talebini getir
+- `POST /api/v1/help-requests` - Yeni yardım talebi oluştur (SOS butonu)
+- `PUT /api/v1/help-requests/<id>` - Yardım talebi durumunu güncelle
+- `GET /api/v1/help-requests/nearby` - Yakındaki yardım taleplerini getir (gönüllüler için)
+
+### Konum Noktaları
+- `GET /api/v1/locations` - Onaylanmış konum noktalarını listele
+- `POST /api/v1/locations` - Yeni konum noktası bildir
+- `GET /api/v1/locations/type/<point_type>` - Belirli tipteki konumları getir
+
+### İhtiyaç Tipleri
+- `GET /api/v1/need-types` - Tüm ihtiyaç tiplerini listele
+- `POST /api/v1/need-types` - Yeni ihtiyaç tipi ekle
+
+## 📁 Proje Yapısı
+```
+backend/
+├── app/
+│   ├── __init__.py          # Flask factory fonksiyonu
+│   ├── extentions.py        # Flask eklentileri (db, migrate)
+│   ├── models.py            # SQLAlchemy veritabanı modelleri
+│   └── api/
+│       ├── __init__.py
+│       └── routes.py        # API endpoint'leri
+├── migrations/              # Alembic veritabanı migration'ları
+├── instance/                # Instance-specific dosyalar
+├── venv/                    # Python sanal ortamı (git'e eklenmez)
+├── .env                     # Ortam değişkenleri (git'e eklenmez)
+├── .env.example             # Örnek ortam değişkenleri dosyası
+├── config.py                # Uygulama konfigürasyonu
+├── requirements.txt         # Python bağımlılıkları
+└── run.py                   # Uygulama giriş noktası
+```
+
+## 🗄️ Veritabanı Modelleri
+
+### User (Kullanıcı)
+Kullanıcı kimlik doğrulama ve temel bilgiler.
+
+### UserProfile (Kullanıcı Profili)
+Sağlık bilgileri, kan grubu, ilaç ve alerji bilgileri.
+
+### EmergencyContact (Acil Durum İletişim)
+Kullanıcının acil durum iletişim kişileri.
+
+### HelpRequest (Yardım Talebi)
+SOS butonu ile oluşturulan yardım çağrıları.
+
+### LocationPoint (Konum Noktası)
+Toplanma alanları, dağıtım noktaları, güvenli bölgeler.
+
+### NeedType (İhtiyaç Tipi)
+Gıda, su, barınak, ilaç gibi ihtiyaç kategorileri.
+
+### RequestedNeed (Talep Edilen İhtiyaç)
+Yardım taleplerinde belirtilen spesifik ihtiyaçlar.
+
+## 🛠️ Geliştirme Notları
+
+### Migration Oluşturma
+Model değişikliklerinden sonra:
+```bash
+flask db migrate -m "Değişiklik açıklaması"
+flask db upgrade
+```
+
+### Veritabanını Sıfırlama
+```bash
+# Tüm migration'ları geri al
+flask db downgrade base
+
+# Migration'ları tekrar uygula
+flask db upgrade
+```
+
+### Test Verisi Ekleme
+Geliştirme ortamında test verisi eklemek için:
+```python
+# Python shell'i aç
+flask shell
+
+# Örnek kullanıcı oluştur
+from app.models import User, NeedType
+from app.extentions import db
+
+user = User(phone_number='+905551234567', password_hash='hashed_password')
+db.session.add(user)
+db.session.commit()
+```
+
+## 🐛 Sık Karşılaşılan Hatalar
+
+### RuntimeError: SQLALCHEMY_DATABASE_URI must be set
+**Çözüm:** `.env` dosyasında `DATABASE_URL` değişkeninin ayarlı olduğundan emin olun.
+
+### ModuleNotFoundError: No module named 'dotenv'
+**Çözüm:** Sanal ortamı aktif edin ve `pip install -r requirements.txt` komutunu çalıştırın.
+
+### İzin hatası veya "Böyle bir dosya yok"
+**Çözüm:** Backend dizininde olduğunuzdan ve sanal ortamın aktif olduğundan emin olun:
+```bash
+cd backend
+source venv/bin/activate
+python run.py
+```
+
+## 🔒 Güvenlik Notları
+
+- **Production'da:** `SECRET_KEY` ve `JWT_SECRET_KEY` değerlerini güçlü, rastgele değerlerle değiştirin.
+- **Production'da:** `DEBUG=False` ve `FLASK_ENV=production` ayarlayın.
+- **Production'da:** HTTPS kullanın ve CORS ayarlarını production domain'inizle sınırlayın.
+- **Production'da:** Gunicorn veya uWSGI gibi bir production WSGI server kullanın.
+- **Production'da:** Nginx gibi bir reverse proxy arkasında çalıştırın.
+- Veritabanı şifrelerini ve API anahtarlarını asla git'e commit etmeyin.
+- `.env` dosyasını `.gitignore`'a eklediğinizden emin olun.
+
+## 📚 Ek Kaynaklar
+
+- [Flask Dokümantasyonu](https://flask.palletsprojects.com/)
+- [SQLAlchemy Dokümantasyonu](https://docs.sqlalchemy.org/)
+- [Flask-Migrate Dokümantasyonu](https://flask-migrate.readthedocs.io/)
+- [PostgreSQL Dokümantasyonu](https://www.postgresql.org/docs/)
+- [Supabase Dokümantasyonu](https://supabase.com/docs)
+
+## 💬 Destek
+
+Sorularınız için issue açabilir veya proje sahipleriyle iletişime geçebilirsiniz.
+
+---
+
+**Not:** Ana proje dokümantasyonu için [Ana README](../README.md) dosyasına bakın.
