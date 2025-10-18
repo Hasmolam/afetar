@@ -2,7 +2,7 @@
 
 ## 📡 Base URL
 ```
-http://localhost:5000/api
+http://localhost:5000/api/v1
 ```
 
 ## 🔐 Authentication
@@ -37,7 +37,7 @@ API'nin çalışıp çalışmadığını test eder.
 ```json
 {
   "message": "API çalışıyor!",
-  "endpoint": "/api/test"
+  "endpoint": "/test"
 }
 ```
 
