@@ -1,0 +1,68 @@
+Project afetar {
+  database_type: 'PostgreSQL'
+  Note: 'afet gönüllü eşleştirme sistemi'
+}
+
+
+Table User {
+  id integer [primary key]
+  phone_number varchar [unique, not null]
+  password_hash varchar [not null]
+  is_phone_verified bool [not null, default: false]
+  is_volunteer_mode_active bool [default: false]
+  created_at timestamp
+}
+
+Table UserProfile {
+  user_id integer [primary key, ref: > User.id]
+  full_name varchar
+  blood_type varchar(3) // Örn: 'A+'
+  chronic_diseases text // Kronik hastalıklar
+  medications text // Düzenli kullanılan ilaçlar
+  allergies text // Bilinen alerjiler
+  home_address_text text // Opsiyonel adres bilgisi
+}
+
+Table EmergencyContact {
+  id integer [primary key]
+  user_id integer [ref: > User.id] // Bu kişiyi kimin eklediği
+  contact_name varchar [not null]
+  contact_phone_number varchar [not null]
+}
+
+Table LocationPoint {
+  id integer [primary key]
+  point_type varchar [not null] // 'toplanma_alani', 'dagitim_noktasi', 'guvenli_bolge', 'mobil_hastane'
+  name varchar [not null]
+  latitude decimal [not null]
+  longitude decimal [not null]
+  status varchar [not null, default: 'onay_bekliyor'] // 'onay_bekliyor', 'onaylandi', 'hizmet_disi'
+  reported_by_user_id integer [ref: > User.id, null] // Kullanıcı bildirdiyse onun ID'si
+  created_at timestamp
+}
+
+Table HelpRequest {
+  id integer [primary key]
+  requester_id integer [ref: > User.id, not null]
+  volunteer_id integer [ref: > User.id, null]
+  latitude decimal [not null]
+  longitude decimal [not null]
+  status varchar [not null, default: 'bekliyor'] // Çağrının genel durumu: 'bekliyor', 'gönüllü_atandı', 'tamamlandı', 'iptal_edildi'
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table NeedType {
+  id integer [primary key]
+  name varchar [unique, not null]
+  description text
+}
+
+Table RequestedNeed {
+  id integer [primary key]
+  help_request_id integer [ref: > HelpRequest.id, not null]
+  need_type_id integer [ref: > NeedType.id, not null]
+  status varchar [not null, default: 'bekleniyor'] // İhtiyacın durumu: 'bekleniyor', 'yolda', 'teslim_edildi'
+  quantity integer [not null, default: 1]
+  notes text // Ek detaylar, örn: 'Bebek maması 0-6 ay için'
+}
