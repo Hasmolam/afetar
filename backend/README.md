@@ -53,10 +53,10 @@ Migration sistemi hazır durumda. Migration komutlarını kullanmak için:
 #### Kolay Yol (Önerilen):
 ```bash
 # Migration helper script'ini kullan
-./migrate.sh help          # Tüm komutları göster
-./migrate.sh current       # Mevcut durumu göster
-./migrate.sh upgrade       # Migration'ları uygula
-./migrate.sh create "msg"  # Yeni migration oluştur
+bash scripts/migrate.sh help          # Tüm komutları göster
+bash scripts/migrate.sh current       # Mevcut durumu göster
+bash scripts/migrate.sh upgrade       # Migration'ları uygula
+bash scripts/migrate.sh create "msg"  # Yeni migration oluştur
 ```
 
 #### Manuel Yol:
@@ -74,7 +74,7 @@ flask db current
 flask db history
 ```
 
-**Not:** Detaylı migration rehberi için [MIGRATIONS.md](MIGRATIONS.md) dosyasına bakın.
+**Not:** Detaylı migration rehberi için [docs/MIGRATIONS.md](docs/MIGRATIONS.md) dosyasına bakın.
 
 ### 5. Uygulamayı Çalıştırma
 ```bash
@@ -89,52 +89,79 @@ Uygulama `http://localhost:5000` adresinde çalışacaktır.
 
 ## 📡 API Endpoint'leri
 
-### Ana Endpoint'ler
-- `GET /` - API bilgisi ve durum
-- `GET /health` - Health check endpoint'i
-- `GET /api/v1/test` - API test endpoint'i
+**37+ endpoint** ile eksiksiz REST API! 
 
-### Kullanıcı Endpoint'leri
-- `GET /api/v1/users` - Tüm kullanıcıları listele
-- `GET /api/v1/users/<id>` - Belirli bir kullanıcıyı getir
-- `POST /api/v1/users` - Yeni kullanıcı kaydet
-- `PUT /api/v1/users/<id>` - Kullanıcı bilgilerini güncelle
-- `DELETE /api/v1/users/<id>` - Kullanıcı sil
+### 🔗 Hızlı Linkler
+- **[Detaylı API Dokümantasyonu](docs/API_DOCUMENTATION.md)** - Tüm endpoint'ler, örnekler ve açıklamalar
+- **[Özellik Özeti](docs/FEATURES_SUMMARY.md)** - MVP özellikleri ve teknik detaylar
+- **[Endpoint Listesi](scripts/list_endpoints.py)** - Script ile tüm endpoint'leri görüntüle
 
-### Yardım Talepleri
-- `GET /api/v1/help-requests` - Tüm yardım taleplerini listele
-- `GET /api/v1/help-requests/<id>` - Belirli bir yardım talebini getir
-- `POST /api/v1/help-requests` - Yeni yardım talebi oluştur (SOS butonu)
-- `PUT /api/v1/help-requests/<id>` - Yardım talebi durumunu güncelle
-- `GET /api/v1/help-requests/nearby` - Yakındaki yardım taleplerini getir (gönüllüler için)
+### 📋 Hızlı Genel Bakış
 
-### Konum Noktaları
-- `GET /api/v1/locations` - Onaylanmış konum noktalarını listele
-- `POST /api/v1/locations` - Yeni konum noktası bildir
-- `GET /api/v1/locations/type/<point_type>` - Belirli tipteki konumları getir
+#### Kullanıcı Yönetimi (7 endpoint)
+- Kullanıcı CRUD işlemleri
+- Gönüllü modu aktivasyonu
+- Profil yönetimi
+- Acil durum kişileri
 
-### İhtiyaç Tipleri
-- `GET /api/v1/need-types` - Tüm ihtiyaç tiplerini listele
-- `POST /api/v1/need-types` - Yeni ihtiyaç tipi ekle
+#### Yardım Talepleri - SOS (8 endpoint)
+- ✅ **SOS Butonu** - Tek dokunuşla yardım çağrısı
+- ✅ **Durum Takibi** - Real-time güncelleme
+- ✅ **Yakınlık Arama** - Coğrafi konum bazlı
+- ✅ **Gönüllü Atama** - Otomatik eşleştirme
+
+#### Konum & İhtiyaç Yönetimi (15+ endpoint)
+- Toplanma alanları, dağıtım noktaları
+- İhtiyaç tipleri ve takibi
+- Durum yönetimi
+
+### 🎯 MVP Özellikleri - Tamamlandı!
+Tüm Product Requirement Document (PRD) özellikleri uygulandı:
+- ✅ Ö-1: Tek Dokunuşla Yardım Çağrısı
+- ✅ Ö-2: Çağrı Durumu Geri Bildirimi
+- ✅ Ö-3: Gönüllü Modu Aktivasyonu
+- ✅ Ö-4: Yakındaki Çağrıları Haritada Görme
+- ✅ Ö-5: Çağrıyı Üstlenme ve Navigasyon
+- 🔨 Ö-6: Proaktif Bildirim (Backend hazır, Push servis gerekli)
+
+**Detaylar için:** [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)
 
 ## 📁 Proje Yapısı
 ```
 backend/
-├── app/
-│   ├── __init__.py          # Flask factory fonksiyonu
-│   ├── extentions.py        # Flask eklentileri (db, migrate)
-│   ├── models.py            # SQLAlchemy veritabanı modelleri
+├── app/                           # 🐍 Ana uygulama kodu
+│   ├── __init__.py               # Flask factory fonksiyonu
+│   ├── extentions.py             # Flask eklentileri (db, migrate)
+│   ├── models.py                 # SQLAlchemy veritabanı modelleri (7 tablo)
 │   └── api/
 │       ├── __init__.py
-│       └── routes.py        # API endpoint'leri
-├── migrations/              # Alembic veritabanı migration'ları
-├── instance/                # Instance-specific dosyalar
-├── venv/                    # Python sanal ortamı (git'e eklenmez)
-├── .env                     # Ortam değişkenleri (git'e eklenmez)
-├── .env.example             # Örnek ortam değişkenleri dosyası
-├── config.py                # Uygulama konfigürasyonu
-├── requirements.txt         # Python bağımlılıkları
-└── run.py                   # Uygulama giriş noktası
+│       └── routes.py             # API endpoint'leri (791 satır, 37 endpoint)
+│
+├── docs/                          # 📚 Dokümantasyon dosyaları
+│   ├── README.md                 # Dokümantasyon indeksi
+│   ├── API_DOCUMENTATION.md      # Detaylı API referansı (800+ satır)
+│   ├── FEATURES_SUMMARY.md       # Özellik özeti ve teknik detaylar
+│   ├── DEVELOPMENT_COMPLETE.md   # Geliştirme tamamlama raporu
+│   ├── MIGRATIONS.md             # Kapsamlı migration rehberi
+│   ├── MIGRATION_QUICKREF.md     # Hızlı referans kartı
+│   └── MIGRATION_SETUP_SUMMARY.md # Migration kurulum özeti
+│
+├── scripts/                       # 🛠️ Yardımcı scriptler
+│   ├── test_api.py               # Otomatik API test scripti
+│   ├── list_endpoints.py         # Endpoint listesi görüntüleyici
+│   ├── migrate.sh                # Migration helper script
+│   └── migration-quickstart.sh   # Hızlı başlangıç scripti
+│
+├── migrations/                    # 📦 Alembic veritabanı migration'ları
+├── instance/                      # 🔐 Instance-specific dosyalar
+├── venv/                         # 🐍 Python sanal ortamı (git'e eklenmez)
+│
+├── .env                          # 🔑 Ortam değişkenleri (git'e eklenmez)
+├── .env.example                  # Örnek ortam değişkenleri dosyası
+├── config.py                     # ⚙️ Uygulama konfigürasyonu
+├── requirements.txt              # 📋 Python bağımlılıkları
+├── run.py                        # 🚀 Uygulama giriş noktası
+└── README.md                     # 📖 Bu dosya (kurulum rehberi)
 ```
 
 ## 🗄️ Veritabanı Modelleri
@@ -168,11 +195,11 @@ Veritabanı şemasında değişiklik yaparken migration sistemi kullanılmalıd�
 
 #### Hızlı Komutlar (migrate.sh ile):
 ```bash
-./migrate.sh create "Add new field to User"  # Yeni migration oluştur
-./migrate.sh upgrade                          # Migration'ları uygula
-./migrate.sh current                          # Durumu kontrol et
-./migrate.sh history                          # Geçmişi görüntüle
-./migrate.sh downgrade                        # Son migration'ı geri al
+bash scripts/migrate.sh create "Add new field to User"  # Yeni migration oluştur
+bash scripts/migrate.sh upgrade                          # Migration'ları uygula
+bash scripts/migrate.sh current                          # Durumu kontrol et
+bash scripts/migrate.sh history                          # Geçmişi görüntüle
+bash scripts/migrate.sh downgrade                        # Son migration'ı geri al
 ```
 
 #### Manuel Komutlar:
@@ -191,7 +218,7 @@ flask db history
 flask db downgrade
 ```
 
-**Önemli:** Detaylı migration rehberi ve best practices için [MIGRATIONS.md](MIGRATIONS.md) dosyasını okuyun.
+**Önemli:** Detaylı migration rehberi ve best practices için [docs/MIGRATIONS.md](docs/MIGRATIONS.md) dosyasını okuyun.
 
 ### Migration Oluşturma
 Model değişikliklerinden sonra:
@@ -252,6 +279,18 @@ python run.py
 
 ## 📚 Ek Kaynaklar
 
+### Proje Dokümantasyonu
+- **[Dokümantasyon İndeksi](docs/README.md)** - Tüm dökümanlara erişim
+- **[API Referansı](docs/API_DOCUMENTATION.md)** - Detaylı endpoint rehberi
+- **[Özellik Özeti](docs/FEATURES_SUMMARY.md)** - Teknik detaylar ve mimari
+- **[Migration Rehberi](docs/MIGRATIONS.md)** - Database yönetimi
+
+### Test ve Araçlar
+- **[API Test Script](scripts/test_api.py)** - Otomatik test scripti
+- **[Endpoint Listesi](scripts/list_endpoints.py)** - Tüm endpoint'leri görüntüle
+- **[Migration Helper](scripts/migrate.sh)** - Migration yardımcı script
+
+### Dış Kaynaklar
 - [Flask Dokümantasyonu](https://flask.palletsprojects.com/)
 - [SQLAlchemy Dokümantasyonu](https://docs.sqlalchemy.org/)
 - [Flask-Migrate Dokümantasyonu](https://flask-migrate.readthedocs.io/)
@@ -264,4 +303,8 @@ Sorularınız için issue açabilir veya proje sahipleriyle iletişime geçebili
 
 ---
 
-**Not:** Ana proje dokümantasyonu için [Ana README](../README.md) dosyasına bakın.
+**Not:** 
+- Backend dokümantasyonu için [docs/](docs/) klasörüne bakın
+- Ana proje dokümantasyonu için [Ana README](../README.md) dosyasına bakın
+- API test etmek için: `python scripts/test_api.py`
+- Endpoint'leri listelemek için: `python scripts/list_endpoints.py`
