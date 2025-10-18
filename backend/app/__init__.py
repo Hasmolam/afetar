@@ -1,6 +1,6 @@
 from flask import Flask
 from config import Config
-from app.extentions import db, migrate
+from app.extentions import db, migrate, jwt
 from dotenv import load_dotenv
 
 def create_app(config_class=Config):
@@ -18,6 +18,7 @@ def create_app(config_class=Config):
     # Eklentileri uygulamaya bağla
     db.init_app(app)
     migrate.init_app(app, db)
+    jwt.init_app(app)
     
     # Modelleri import et (migration'lar için gerekli)
     from app import models

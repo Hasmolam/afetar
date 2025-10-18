@@ -36,9 +36,15 @@ cp .env.example .env
 ```bash
 # Gerekli alanlar
 SECRET_KEY=cok-guclu-ve-rastgele-bir-anahtar-buraya-yazin
+JWT_SECRET_KEY=jwt-icin-ayri-bir-guclu-anahtar  # JWT authentication için
 DATABASE_URL=postgresql://kullanici_adi:sifre@host:5432/veritabani_adi
 FLASK_ENV=development
 ```
+
+**JWT Authentication Notları:**
+- `JWT_SECRET_KEY` mutlaka güçlü ve rastgele olmalı (en az 32 karakter önerilir)
+- Production'da `SECRET_KEY` ve `JWT_SECRET_KEY` farklı olmalı
+- Token süreleri: Access Token 1 saat, Refresh Token 30 gün
 
 #### Supabase Kullanıyorsanız:
 Supabase projenizden PostgreSQL bağlantı bilgilerini alın:
@@ -98,17 +104,23 @@ Uygulama `http://localhost:5000` adresinde çalışacaktır.
 
 ### 📋 Hızlı Genel Bakış
 
+#### 🔐 Authentication & Authorization
+- JWT token bazlı kimlik doğrulama
+- Access token (1 saat) ve Refresh token (30 gün)
+- Kullanıcı bazlı yetkilendirme
+- 16 korumalı endpoint, 21 public endpoint
+
 #### Kullanıcı Yönetimi (7 endpoint)
 - Kullanıcı CRUD işlemleri
-- Gönüllü modu aktivasyonu
-- Profil yönetimi
-- Acil durum kişileri
+- Gönüllü modu aktivasyonu (🔒 Protected)
+- Profil yönetimi (🔒 Protected)
+- Acil durum kişileri (🔒 Protected)
 
 #### Yardım Talepleri - SOS (8 endpoint)
-- ✅ **SOS Butonu** - Tek dokunuşla yardım çağrısı
+- ✅ **SOS Butonu** - Tek dokunuşla yardım çağrısı (🔒 Protected)
 - ✅ **Durum Takibi** - Real-time güncelleme
 - ✅ **Yakınlık Arama** - Coğrafi konum bazlı
-- ✅ **Gönüllü Atama** - Otomatik eşleştirme
+- ✅ **Gönüllü Atama** - Otomatik eşleştirme (🔒 Protected)
 
 #### Konum & İhtiyaç Yönetimi (15+ endpoint)
 - Toplanma alanları, dağıtım noktaları
@@ -123,8 +135,11 @@ Tüm Product Requirement Document (PRD) özellikleri uygulandı:
 - ✅ Ö-4: Yakındaki Çağrıları Haritada Görme
 - ✅ Ö-5: Çağrıyı Üstlenme ve Navigasyon
 - 🔨 Ö-6: Proaktif Bildirim (Backend hazır, Push servis gerekli)
+- ✅ **JWT Authentication** - Güvenli kimlik doğrulama ve yetkilendirme
 
-**Detaylar için:** [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)
+**Detaylar için:** 
+- [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - Tüm endpoint'ler
+- [docs/JWT_AUTHENTICATION.md](docs/JWT_AUTHENTICATION.md) - Authentication rehberi
 
 ## 📁 Proje Yapısı
 ```
@@ -140,6 +155,8 @@ backend/
 ├── docs/                          # 📚 Dokümantasyon dosyaları
 │   ├── README.md                 # Dokümantasyon indeksi
 │   ├── API_DOCUMENTATION.md      # Detaylı API referansı (800+ satır)
+│   ├── JWT_AUTHENTICATION.md     # JWT authentication rehberi (400+ satır)
+│   ├── JWT_IMPLEMENTATION_SUMMARY.md # JWT implementasyon özeti
 │   ├── FEATURES_SUMMARY.md       # Özellik özeti ve teknik detaylar
 │   ├── DEVELOPMENT_COMPLETE.md   # Geliştirme tamamlama raporu
 │   ├── MIGRATIONS.md             # Kapsamlı migration rehberi
@@ -147,6 +164,11 @@ backend/
 │   └── MIGRATION_SETUP_SUMMARY.md # Migration kurulum özeti
 │
 ├── scripts/                       # 🛠️ Yardımcı scriptler
+│   ├── test_api.py               # API test script'i
+│   ├── test_jwt_auth.py          # JWT authentication test script'i
+│   ├── list_endpoints.py         # Endpoint listesi
+│   ├── migrate.sh                # Migration script
+│   └── migration-quickstart.sh   # Hızlı migration kurulumu
 │   ├── test_api.py               # Otomatik API test scripti
 │   ├── list_endpoints.py         # Endpoint listesi görüntüleyici
 │   ├── migrate.sh                # Migration helper script

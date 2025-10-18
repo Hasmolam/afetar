@@ -7,6 +7,10 @@
 - ✅ Telefon numarası ile kayıt sistemi
 - ✅ Gönüllü modu aktivasyonu (Ö-3)
 - ✅ Şifre hash'leme (güvenlik)
+- ✅ JWT Authentication (Token-based security)
+  - Register, Login, Token Refresh endpoints
+  - Access Token (1 saat) + Refresh Token (30 gün)
+  - 16 korumalı endpoint
 
 ### 2. Kullanıcı Profili (User Profile)
 - ✅ Sağlık bilgileri (kan grubu, kronik hastalıklar)
@@ -50,9 +54,10 @@
 
 ## 📊 API İstatistikleri
 
-### Toplam Endpoint Sayısı: **40+**
+### Toplam Endpoint Sayısı: **41**
 
 #### Endpoint Dağılımı:
+- **Authentication**: 4 (Register, Login, Refresh, Me)
 - **Kullanıcı Endpoint'leri**: 7
 - **Kullanıcı Profili**: 2
 - **Acil Durum Kişileri**: 4
@@ -61,6 +66,13 @@
 - **İhtiyaç Tipleri**: 5
 - **Talep Edilen İhtiyaçlar**: 4
 - **Genel/Test**: 1
+
+#### Güvenlik İstatistikleri:
+- **🔒 Korumalı Endpoint**: 16
+- **🔓 Public Endpoint**: 25
+- **Token Tipi**: JWT (JSON Web Token)
+- **Access Token Süresi**: 1 saat
+- **Refresh Token Süresi**: 30 gün
 
 ## 🎯 MVP Özellikleri Karşılama Durumu
 
@@ -94,10 +106,15 @@ GET /help-requests/nearby?latitude=41.0082&longitude=28.9784&radius=10
 - Konum onay süreci: onay bekliyor → onaylandı
 
 ### 4. Güvenlik Önlemleri
-- Şifre hash'leme (werkzeug.security)
+- **JWT Authentication** (Flask-JWT-Extended)
+  - Access Token + Refresh Token sistemi
+  - 16 endpoint JWT ile korunuyor
+  - Token-based authorization
+- Şifre hash'leme (werkzeug.security, PBKDF2-SHA256)
 - Telefon doğrulama sistemi
 - 404/409/500 hata yönetimi
 - Input validasyonu
+- 401 Unauthorized / 403 Forbidden kontrolleri
 
 ## 📝 Kullanım Senaryoları
 

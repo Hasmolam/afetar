@@ -21,7 +21,26 @@ Backend projesinin tüm dokümantasyon dosyaları `docs/` klasöründe bulunmakt
 - İhtiyaç Yönetimi
 - Acil Durum Kişileri
 
-#### 2. [FEATURES_SUMMARY.md](./FEATURES_SUMMARY.md)
+#### 2. [JWT_AUTHENTICATION.md](./JWT_AUTHENTICATION.md) 🆕
+**400+ satır JWT authentication rehberi**
+- Authentication endpoint'leri (register, login, refresh, me)
+- Token yapısı ve süreleri
+- Korumalı endpoint'ler listesi (16 endpoint)
+- Public endpoint'ler listesi (21 endpoint)
+- Authorization kuralları
+- Kullanım örnekleri (Python, JavaScript, cURL)
+- Güvenlik notları
+- Hata kodları
+
+#### 3. [JWT_IMPLEMENTATION_SUMMARY.md](./JWT_IMPLEMENTATION_SUMMARY.md) 🆕
+**JWT implementasyon özeti**
+- Yapılan değişiklikler detayı
+- Korumalı endpoint tablosu
+- Authorization kuralları
+- Test senaryoları
+- İstatistikler ve metrikler
+
+#### 4. [FEATURES_SUMMARY.md](./FEATURES_SUMMARY.md)
 **Özellik özeti ve teknik detaylar**
 - Tamamlanan geliştirmeler listesi
 - API istatistikleri (37 endpoint)
@@ -30,7 +49,7 @@ Backend projesinin tüm dokümantasyon dosyaları `docs/` klasöründe bulunmakt
 - Teknik mimari açıklamaları
 - Sonraki adımlar (roadmap)
 
-#### 3. [DEVELOPMENT_COMPLETE.md](./DEVELOPMENT_COMPLETE.md)
+#### 5. [DEVELOPMENT_COMPLETE.md](./DEVELOPMENT_COMPLETE.md)
 **Geliştirme tamamlama raporu**
 - Yapılan işlerin özeti
 - Demo senaryoları
@@ -40,7 +59,7 @@ Backend projesinin tüm dokümantasyon dosyaları `docs/` klasöründe bulunmakt
 
 ### 🗄️ Database Migration Dökümanları
 
-#### 4. [MIGRATIONS.md](./MIGRATIONS.md)
+#### 6. [MIGRATIONS.md](./MIGRATIONS.md)
 **Kapsamlı migration rehberi**
 - Database migration nedir?
 - Alembic kullanımı
@@ -48,13 +67,13 @@ Backend projesinin tüm dokümantasyon dosyaları `docs/` klasöründe bulunmakt
 - Troubleshooting ve best practices
 - Production migration stratejileri
 
-#### 5. [MIGRATION_QUICKREF.md](./MIGRATION_QUICKREF.md)
+#### 7. [MIGRATION_QUICKREF.md](./MIGRATION_QUICKREF.md)
 **Hızlı referans kartı**
 - Sık kullanılan komutlar
 - Kısa açıklamalar
 - Quick tips
 
-#### 6. [MIGRATION_SETUP_SUMMARY.md](./MIGRATION_SETUP_SUMMARY.md)
+#### 8. [MIGRATION_SETUP_SUMMARY.md](./MIGRATION_SETUP_SUMMARY.md)
 **Migration kurulum özeti**
 - İlk kurulum adımları
 - Temel yapılandırma
@@ -63,6 +82,13 @@ Backend projesinin tüm dokümantasyon dosyaları `docs/` klasöründe bulunmakt
 ---
 
 ## 🔗 Hızlı Erişim Linkleri
+
+### 🔐 Authentication & Security
+- [JWT Authentication Rehberi](./JWT_AUTHENTICATION.md)
+- [Authentication Endpoint'leri](./JWT_AUTHENTICATION.md#authentication-endpoints)
+- [Korumalı Endpoint'ler](./JWT_AUTHENTICATION.md#-korumalı-endpointler)
+- [Authorization Kuralları](./JWT_AUTHENTICATION.md#yetkilendirme-authorization-kuralları)
+- [Kullanım Örnekleri](./JWT_AUTHENTICATION.md#kullanım-örnekleri)
 
 ### API ve Geliştirme
 - [API Endpoint'leri](./API_DOCUMENTATION.md#-genel-endpointler)

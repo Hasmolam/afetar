@@ -3,7 +3,11 @@ from app.extentions import db
 from app.models import User, UserProfile, EmergencyContact, LocationPoint, HelpRequest, NeedType, RequestedNeed
 from datetime import datetime
 from sqlalchemy import func, and_
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import (
+    create_access_token, create_refresh_token, 
+    jwt_required, get_jwt_identity
+)
 
 # API Blueprint oluştur
 api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
@@ -15,6 +19,109 @@ def test():
     return jsonify({
         'message': 'API çalışıyor!',
         'endpoint': '/api/v1/test'
+    })
+
+
+# Authentication endpoint'leri
+@api_bp.route('/auth/register', methods=['POST'])
+def register():
+    """Yeni kullanıcı kaydı (JWT token ile)"""
+    data = request.get_json()
+    
+    if not data or not data.get('phone_number') or not data.get('password'):
+        return jsonify({'error': 'Telefon numarası ve şifre gereklidir'}), 400
+    
+    # Kullanıcı zaten var mı kontrol et
+    existing_user = User.query.filter_by(phone_number=data['phone_number']).first()
+    if existing_user:
+        return jsonify({'error': 'Bu telefon numarası zaten kayıtlı'}), 409
+    
+    # Yeni kullanıcı oluştur
+    new_user = User(
+        phone_number=data['phone_number'],
+        password_hash=generate_password_hash(data['password']),
+        is_phone_verified=data.get('is_phone_verified', False),
+        is_volunteer_mode_active=data.get('is_volunteer_mode_active', False)
+    )
+    
+    db.session.add(new_user)
+    db.session.commit()
+    
+    # JWT token'ları oluştur (identity string olmalı)
+    access_token = create_access_token(identity=str(new_user.id))
+    refresh_token = create_refresh_token(identity=str(new_user.id))
+    
+    return jsonify({
+        'message': 'Kullanıcı başarıyla oluşturuldu',
+        'user': {
+            'id': new_user.id,
+            'phone_number': new_user.phone_number,
+            'is_phone_verified': new_user.is_phone_verified,
+            'is_volunteer_mode_active': new_user.is_volunteer_mode_active,
+            'created_at': new_user.created_at.isoformat() if new_user.created_at else None
+        },
+        'access_token': access_token,
+        'refresh_token': refresh_token
+    }), 201
+
+
+@api_bp.route('/auth/login', methods=['POST'])
+def login():
+    """Kullanıcı girişi (JWT token alır)"""
+    data = request.get_json()
+    
+    if not data or not data.get('phone_number') or not data.get('password'):
+        return jsonify({'error': 'Telefon numarası ve şifre gereklidir'}), 400
+    
+    # Kullanıcıyı bul
+    user = User.query.filter_by(phone_number=data['phone_number']).first()
+    
+    # Kullanıcı yok veya şifre yanlış
+    if not user or not check_password_hash(user.password_hash, data['password']):
+        return jsonify({'error': 'Telefon numarası veya şifre hatalı'}), 401
+    
+    # JWT token'ları oluştur (identity string olmalı)
+    access_token = create_access_token(identity=str(user.id))
+    refresh_token = create_refresh_token(identity=str(user.id))
+    
+    return jsonify({
+        'message': 'Giriş başarılı',
+        'user': {
+            'id': user.id,
+            'phone_number': user.phone_number,
+            'is_phone_verified': user.is_phone_verified,
+            'is_volunteer_mode_active': user.is_volunteer_mode_active
+        },
+        'access_token': access_token,
+        'refresh_token': refresh_token
+    }), 200
+
+
+@api_bp.route('/auth/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    """Refresh token ile yeni access token al"""
+    current_user_id = int(get_jwt_identity())
+    new_access_token = create_access_token(identity=current_user_id)
+    
+    return jsonify({
+        'access_token': new_access_token
+    }), 200
+
+
+@api_bp.route('/auth/me', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    """Mevcut kullanıcının bilgilerini getir (JWT korumalı)"""
+    current_user_id = int(get_jwt_identity())  # String'den int'e çevir
+    user = User.query.get_or_404(current_user_id)
+    
+    return jsonify({
+        'id': user.id,
+        'phone_number': user.phone_number,
+        'is_phone_verified': user.is_phone_verified,
+        'is_volunteer_mode_active': user.is_volunteer_mode_active,
+        'created_at': user.created_at.isoformat() if user.created_at else None
     })
 
 
@@ -109,8 +216,15 @@ def delete_user(user_id):
 
 
 @api_bp.route('/users/<int:user_id>/volunteer-mode', methods=['POST'])
+@jwt_required()
 def toggle_volunteer_mode(user_id):
     """Gönüllü modunu aç/kapat (Ö-3: Gönüllü Modu Aktivasyonu)"""
+    current_user_id = int(get_jwt_identity())
+    
+    # Kullanıcı sadece kendi bilgilerini güncelleyebilir
+    if current_user_id != user_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
+    
     user = User.query.get_or_404(user_id)
     data = request.get_json()
     
@@ -126,8 +240,15 @@ def toggle_volunteer_mode(user_id):
 
 # Kullanıcı profili endpoint'leri
 @api_bp.route('/users/<int:user_id>/profile', methods=['GET'])
+@jwt_required()
 def get_user_profile(user_id):
     """Kullanıcı profilini getir"""
+    current_user_id = int(get_jwt_identity())
+    
+    # Kullanıcı sadece kendi profilini görebilir
+    if current_user_id != user_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
+    
     profile = UserProfile.query.get_or_404(user_id)
     return jsonify({
         'user_id': profile.user_id,
@@ -141,8 +262,15 @@ def get_user_profile(user_id):
 
 
 @api_bp.route('/users/<int:user_id>/profile', methods=['POST', 'PUT'])
+@jwt_required()
 def create_or_update_profile(user_id):
     """Kullanıcı profili oluştur veya güncelle"""
+    current_user_id = int(get_jwt_identity())
+    
+    # Kullanıcı sadece kendi profilini güncelleyebilir
+    if current_user_id != user_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
+    
     user = User.query.get_or_404(user_id)
     data = request.get_json()
     
@@ -170,8 +298,15 @@ def create_or_update_profile(user_id):
 
 # Acil durum iletişim endpoint'leri
 @api_bp.route('/users/<int:user_id>/emergency-contacts', methods=['GET'])
+@jwt_required()
 def get_emergency_contacts(user_id):
-    """Kullanıcının acil durum iletişim kişilerini listele"""
+    """Kullanıcının acil durum kişilerini getir"""
+    current_user_id = int(get_jwt_identity())
+    
+    # Kullanıcı sadece kendi kişilerini görebilir
+    if current_user_id != user_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
+    
     user = User.query.get_or_404(user_id)
     contacts = EmergencyContact.query.filter_by(user_id=user_id).all()
     
@@ -186,8 +321,15 @@ def get_emergency_contacts(user_id):
 
 
 @api_bp.route('/users/<int:user_id>/emergency-contacts', methods=['POST'])
+@jwt_required()
 def add_emergency_contact(user_id):
-    """Acil durum iletişim kişisi ekle"""
+    """Yeni acil durum kişisi ekle"""
+    current_user_id = int(get_jwt_identity())
+    
+    # Kullanıcı sadece kendi listesine ekleyebilir
+    if current_user_id != user_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
+    
     user = User.query.get_or_404(user_id)
     data = request.get_json()
     
@@ -212,9 +354,16 @@ def add_emergency_contact(user_id):
 
 
 @api_bp.route('/emergency-contacts/<int:contact_id>', methods=['PUT'])
+@jwt_required()
 def update_emergency_contact(contact_id):
-    """Acil durum iletişim kişisini güncelle"""
+    """Acil durum kişisini güncelle"""
     contact = EmergencyContact.query.get_or_404(contact_id)
+    current_user_id = int(get_jwt_identity())
+    
+    # Kullanıcı sadece kendi kişisini güncelleyebilir
+    if contact.user_id != current_user_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
+    
     data = request.get_json()
     
     contact.contact_name = data.get('contact_name', contact.contact_name)
@@ -231,9 +380,16 @@ def update_emergency_contact(contact_id):
 
 
 @api_bp.route('/emergency-contacts/<int:contact_id>', methods=['DELETE'])
+@jwt_required()
 def delete_emergency_contact(contact_id):
-    """Acil durum iletişim kişisini sil"""
+    """Acil durum kişisini sil"""
     contact = EmergencyContact.query.get_or_404(contact_id)
+    current_user_id = int(get_jwt_identity())
+    
+    # Kullanıcı sadece kendi kişisini silebilir
+    if contact.user_id != current_user_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
+    
     db.session.delete(contact)
     db.session.commit()
     
@@ -300,12 +456,18 @@ def get_help_request(request_id):
 
 
 @api_bp.route('/help-requests', methods=['POST'])
+@jwt_required()
 def create_help_request():
     """Yeni yardım talebi oluştur (Ö-1: SOS Butonu)"""
+    current_user_id = int(get_jwt_identity())
     data = request.get_json()
     
     if not data.get('requester_id') or not data.get('latitude') or not data.get('longitude'):
         return jsonify({'error': 'requester_id, latitude ve longitude gereklidir'}), 400
+    
+    # Kullanıcı sadece kendi adına talep oluşturabilir
+    if current_user_id != data.get('requester_id'):
+        return jsonify({'error': 'Yetkiniz yok'}), 403
     
     # Yardım talebini oluştur
     help_request = HelpRequest(
@@ -366,13 +528,19 @@ def update_help_request(request_id):
 
 
 @api_bp.route('/help-requests/<int:request_id>/assign', methods=['POST'])
+@jwt_required()
 def assign_volunteer(request_id):
     """Gönüllüyü yardım talebine ata (Ö-5: Çağrıyı Üstlenme)"""
+    current_user_id = int(get_jwt_identity())
     help_request = HelpRequest.query.get_or_404(request_id)
     data = request.get_json()
     
     if not data.get('volunteer_id'):
         return jsonify({'error': 'volunteer_id gereklidir'}), 400
+    
+    # Kullanıcı sadece kendini atayabilir
+    if current_user_id != data.get('volunteer_id'):
+        return jsonify({'error': 'Sadece kendinizi atayabilirsiniz'}), 403
     
     # Gönüllünün var olduğunu ve gönüllü modunun aktif olduğunu kontrol et
     volunteer = User.query.get_or_404(data['volunteer_id'])
@@ -398,9 +566,15 @@ def assign_volunteer(request_id):
 
 
 @api_bp.route('/help-requests/<int:request_id>/complete', methods=['POST'])
+@jwt_required()
 def complete_help_request(request_id):
     """Yardım talebini tamamla"""
+    current_user_id = int(get_jwt_identity())
     help_request = HelpRequest.query.get_or_404(request_id)
+    
+    # Kullanıcı sadece kendi talebi veya atandığı talebi tamamlayabilir
+    if current_user_id != help_request.requester_id and current_user_id != help_request.volunteer_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
     
     help_request.status = 'tamamlandı'
     help_request.updated_at = datetime.utcnow()
@@ -419,9 +593,15 @@ def complete_help_request(request_id):
 
 
 @api_bp.route('/help-requests/<int:request_id>/cancel', methods=['POST'])
+@jwt_required()
 def cancel_help_request(request_id):
     """Yardım talebini iptal et"""
+    current_user_id = int(get_jwt_identity())
     help_request = HelpRequest.query.get_or_404(request_id)
+    
+    # Kullanıcı sadece kendi talebini iptal edebilir
+    if current_user_id != help_request.requester_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
     
     help_request.status = 'iptal_edildi'
     help_request.updated_at = datetime.utcnow()
@@ -508,8 +688,10 @@ def get_locations():
 
 
 @api_bp.route('/locations', methods=['POST'])
+@jwt_required()
 def create_location():
     """Yeni konum noktası bildir"""
+    current_user_id = int(get_jwt_identity())
     data = request.get_json()
     
     if not all(k in data for k in ['name', 'point_type', 'latitude', 'longitude']):
@@ -554,9 +736,16 @@ def get_location(location_id):
 
 
 @api_bp.route('/locations/<int:location_id>', methods=['PUT'])
+@jwt_required()
 def update_location(location_id):
     """Konum noktasını güncelle"""
+    current_user_id = int(get_jwt_identity())
     location = LocationPoint.query.get_or_404(location_id)
+    
+    # Kullanıcı sadece kendi bildirdiği konumu güncelleyebilir
+    if location.reported_by_user_id and current_user_id != location.reported_by_user_id:
+        return jsonify({'error': 'Yetkiniz yok'}), 403
+    
     data = request.get_json()
     
     if 'name' in data:
